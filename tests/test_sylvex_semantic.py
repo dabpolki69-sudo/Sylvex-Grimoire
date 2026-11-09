@@ -144,12 +144,12 @@ asset x {
 
     def test_entity_and_reference_validation(self):
         duplicate = expand_semantic(
-            'sylvex 0.3\\nasset A {\\n link: ref("rig/A")\\n}\\nasset A {\\n}'
+            'sylvex 0.3\nasset A {\n link: ref("rig/A")\n}\nasset A {\n}'
         )
         with self.assertRaises(SemanticError):
             validate_semantic(duplicate)
         valid = expand_semantic(
-            'sylvex 0.3\\nasset A {\\n link: ref("rig/A")\\n}'
+            'sylvex 0.3\nasset A {\n link: ref("rig/A")\n}'
         )
         self.assertEqual(
             validate_semantic(valid, known_refs={"rig/A"}, strict_refs=True),
@@ -159,7 +159,7 @@ asset x {
             validate_semantic(valid, known_refs=set(), strict_refs=True)
 
     def test_strict_refs_requires_registry(self):
-        expanded = expand_semantic("sylvex 0.3\\nasset A {\\n}")
+        expanded = expand_semantic("sylvex 0.3\nasset A {\n}")
         with self.assertRaises(SemanticError):
             validate_semantic(expanded, strict_refs=True)
 
