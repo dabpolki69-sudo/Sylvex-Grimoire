@@ -13,7 +13,7 @@ class Token: kind:str; value:object; line:int; col:int
 class Node: kind:str; value:object=None; children:list=None; line:int=0
 @dataclass
 class Evidenced: value:object; evidence:str=None
-TOKEN=re.compile(r'''(?P<WS>[ \\t\\r]+)|(?P<NL>\\n)|(?P<COMMENT>\\#[^\\n]*)|(?P<STR>"(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*')|(?P<NUM>\\d+(?:\\.\\d+)?)|(?P<ID>[A-Za-z_][A-Za-z0-9_]*)|(?P<OP>==|!=|<=|>=|[{}()\\[\\],:+*/%<>=-])''')
+TOKEN=re.compile(r'''(?P<WS>[ \t\r]+)|(?P<NL>\n)|(?P<COMMENT>\#[^\n]*)|(?P<STR>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(?P<NUM>\d+(?:\.\d+)?)|(?P<ID>[A-Za-z_][A-Za-z0-9_]*)|(?P<OP>==|!=|<=|>=|[{}()\[\],:+*/%<>=-])''')
 def lex(src):
     out=[]; p=0; line=1; col=1
     while p<len(src):
