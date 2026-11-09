@@ -1,4 +1,4 @@
-"""Sylvex 0.2 semantic shorthand parser and deterministic expander."""
+"""Sylvex 0.2/0.3 semantic shorthand parser and deterministic expander."""
 import json
 import re
 from dataclasses import dataclass, field
@@ -68,6 +68,32 @@ def _scalar(raw, line):
             raise SemanticError(f"Invalid string at line {line}: {exc}") from exc
     if raw in ("true", "false", "null"):
         return {"true": True, "false": False, "null": None}[raw]
+    constructor = re.fullmatch(r"([a-z][a-z0-9_]*)\\((.*)\\)", raw)
+    if constructor:
+        name, inner = constructor.groups()
+        try:
+            args = [] if not inner.strip() else [
+                _scalar(item, line) for item in _split_top_level(inner, ",")
+            ]
+        except ValueError as exc:
+            raise SemanticError(f"Invalid {name} value at line {line}: {exc}") from exc
+        if name == "ref":
+            if len(args) != 1 or not isinstance(args[0], str) or not args[0].strip():
+                raise SemanticError(f"ref() requires one non-empty quoted string at line {line}")
+            return {"$ref": args[0]}
+        if name == "vec3":
+            if len(args) != 3 or any(type(value) not in (int, float) for value in args):
+                raise SemanticError(f"vec3() requires exactly three numbers at line {line}")
+            return {"$type": "vec3", "x": args[0], "y": args[1], "z": args[2]}
+        if name == "color":
+            if len(args) != 1 or not isinstance(args[0], str) or not re.fullmatch(r"#[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?", args[0]):
+                raise SemanticError(f"color() requires #RRGGBB or #RRGGBBAA at line {line}")
+            return {"$type": "color", "value": args[0].upper()}
+        if name == "range":
+            if len(args) != 2 or any(type(value) not in (int, float) for value in args) or args[0] > args[1]:
+                raise SemanticError(f"range() requires two ordered numeric bounds at line {line}")
+            return {"$type": "range", "min": args[0], "max": args[1]}
+        raise SemanticError(f"Unknown typed value {name}() at line {line}")
     if _PIPE.fullmatch(raw):
         return {"pipeline": [part.strip() for part in raw.split(">")]}
     if raw.startswith("[") and raw.endswith("]"):
@@ -168,10 +194,29 @@ def expand_semantic(source):
             "kind": declaration.kind,
             "name": declaration.name,
             "profile": declaration.profile,
-            "profile_version": "0.2",
+            "profile_version": _HEADER.fullmatch(source.splitlines()[0].strip()).group(1),
             "properties": properties,
         })
-    return {"language": "sylvex", "version": "0.2", "profiles": profiles, "entities": entities}
+    version = _HEADER.fullmatch(source.splitlines()[0].strip()).group(1)
+    return {"language": "sylvex", "version": version, "profiles": profiles, "entities": entities}
+
+
+def relationship_edges(expanded):
+    """Extract explicit ref() links as deterministic directed graph edges."""
+    edges = []
+    def walk(value, path):
+        if isinstance(value, dict):
+            if set(value) == {"$ref"}:
+                edges.append({"to": value["$ref"], "via": path})
+            else:
+                for key in sorted(value):
+                    walk(value[key], f"{path}.{key}" if path else str(key))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{path}[{index}]")
+    for entity in expanded.get("entities", []):
+        walk(entity.get("properties", {}), entity.get("name", ""))
+    return sorted(edges, key=lambda edge: (edge["to"], edge["via"]))
 
 
 def canonical_json(source, indent=2):

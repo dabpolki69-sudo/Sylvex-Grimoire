@@ -86,6 +86,43 @@ class SemanticTests(unittest.TestCase):
             ["large, creature", "walk", ["jump", "glide"]],
         )
 
+    def test_v03_typed_values_and_references(self):
+        from sylvex_semantic import relationship_edges
+
+        source = """sylvex 0.3
+creature "Sol-Stalker" {
+ origin: vec3(1, 2.5, -3)
+ accent: color("#00e5ff")
+ scale: range(0.8, 1.2)
+ rig: ref("rigs/stalker")
+}
+"""
+        expanded = expand_semantic(source)
+        props = expanded["entities"][0]["properties"]
+        self.assertEqual(expanded["version"], "0.3")
+        self.assertEqual(props["origin"], {"$type": "vec3", "x": 1, "y": 2.5, "z": -3})
+        self.assertEqual(props["accent"], {"$type": "color", "value": "#00E5FF"})
+        self.assertEqual(props["scale"], {"$type": "range", "min": 0.8, "max": 1.2})
+        self.assertEqual(props["rig"], {"$ref": "rigs/stalker"})
+        self.assertEqual(
+            relationship_edges(expanded),
+            [{"to": "rigs/stalker", "via": "Sol-Stalker.rig"}],
+        )
+
+    def test_v03_rejects_invalid_typed_values(self):
+        bad_values = [
+            'origin: vec3(1, 2)',
+            'accent: color("cyan")',
+            'scale: range(2, 1)',
+            'rig: ref("")',
+            'unknown: mystery(1)',
+        ]
+        for field in bad_values:
+            with self.subTest(field=field):
+                source = f"sylvex 0.3\\ncreature x {{\\n {field}\\n}}"
+                with self.assertRaises(SemanticError):
+                    expand_semantic(source)
+
     def test_lowering_emits_native_map(self):
         from sylvex_script import Interpreter
 
