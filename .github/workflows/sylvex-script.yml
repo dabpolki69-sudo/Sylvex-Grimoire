@@ -3,14 +3,20 @@ on:
   push:
     paths:
       - 'sylvex_script.py'
+      - 'sylvex_compact.py'
+      - 'sylvexc.py'
       - 'tests/**'
       - 'examples/**'
+      - 'benchmarks/**'
       - '.github/workflows/sylvex-script.yml'
   pull_request:
     paths:
       - 'sylvex_script.py'
+      - 'sylvex_compact.py'
+      - 'sylvexc.py'
       - 'tests/**'
       - 'examples/**'
+      - 'benchmarks/**'
       - '.github/workflows/sylvex-script.yml'
 jobs:
   test:
@@ -23,3 +29,6 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python sylvex_script.py examples/hello.slx --json
       - run: python sylvex_script.py examples/evidence.slx --json
+      - run: python sylvexc.py compile examples/evidence.slx
+      - run: python sylvexc.py run examples/evidence.slxb --json
+      - run: python benchmarks/size_benchmark.py
