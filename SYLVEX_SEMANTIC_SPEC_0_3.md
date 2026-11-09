@@ -36,3 +36,20 @@ The 0.3 header is retained in expanded output and profile version metadata. Exis
 
 ## Safety and limits
 No constructors execute code. No implicit filesystem, network, model or tool access exists. References are inert identifiers. Units are not yet dimensionally converted; `2.4m` preserves its numeric value and unit. This is an experimental line-oriented grammar, not yet a production sandbox or a claim of superior compactness.
+
+
+## Validation CLI
+
+Validation is local and deterministic. It does not open referenced resources.
+
+```bash
+# Check entity identifiers and document structure
+python sylvexs.py examples/sol_stalker_0_3.slx --validate
+
+# Require every ref() to appear in an explicit registry
+python sylvexs.py examples/sol_stalker_0_3.slx --strict-refs \
+  --known-ref rigs/sol_stalker \
+  --known-ref animations/stalker_locomotion
+```
+
+Use `--known-ref` multiple times to build the exact registry for a project. Strict validation without a registry is an error; no paths are read or resolved automatically.

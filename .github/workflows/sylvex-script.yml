@@ -39,4 +39,6 @@ jobs:
       - run: python sylvexc.py run examples/evidence.slxb --json
       - run: python sylvexs.py examples/sol_stalker_0_2.slx --compact
       - run: python sylvexs.py examples/sol_stalker_0_3.slx --compact
+      - run: python sylvexs.py examples/sol_stalker_0_3.slx --validate
+      - run: python sylvexs.py examples/sol_stalker_0_3.slx --strict-refs --known-ref rigs/sol_stalker --known-ref animations/stalker_locomotion
       - run: python benchmarks/size_benchmark.py
