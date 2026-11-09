@@ -132,7 +132,7 @@ def _scalar(raw, line):
 def parse_semantic(source):
     lines = source.splitlines()
     if not lines or not _HEADER.fullmatch(lines[0].strip()):
-        raise SemanticError("Semantic source must begin with 'sylvex 0.2'")
+        raise SemanticError("Semantic source must begin with 'sylvex 0.2' or 'sylvex 0.3'")
     profiles, declarations, current = {}, [], None
     for number, raw in enumerate(lines[1:], 2):
         line = raw.strip()
