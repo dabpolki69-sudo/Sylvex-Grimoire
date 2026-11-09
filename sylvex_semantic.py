@@ -8,7 +8,7 @@ class SemanticError(ValueError):
     """Invalid Sylvex semantic source."""
 
 
-_HEADER = re.compile(r"^sylvex\s+0\.2$")
+_HEADER = re.compile(r"^sylvex\s+(0\.2|0\.3)$")
 _PROFILE = re.compile(r"^profile\s+([A-Za-z_][\w-]*)\s*\{$")
 _ENTITY = re.compile(r'^([A-Za-z_][\w-]*)\s+(.+?)(?:\s+@([A-Za-z_][\w-]*))?\s*\{$')
 _KEY = re.compile(r"^([A-Za-z_][\w+.-]*)\s*:\s*(.*?)$")
@@ -68,7 +68,7 @@ def _scalar(raw, line):
             raise SemanticError(f"Invalid string at line {line}: {exc}") from exc
     if raw in ("true", "false", "null"):
         return {"true": True, "false": False, "null": None}[raw]
-    constructor = re.fullmatch(r"([a-z][a-z0-9_]*)\\((.*)\\)", raw)
+    constructor = re.fullmatch(r"([a-z][a-z0-9_]*)\((.*)\)", raw)
     if constructor:
         name, inner = constructor.groups()
         try:

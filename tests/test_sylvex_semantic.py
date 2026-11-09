@@ -119,7 +119,7 @@ creature "Sol-Stalker" {
         ]
         for field in bad_values:
             with self.subTest(field=field):
-                source = f"sylvex 0.3\\ncreature x {{\\n {field}\\n}}"
+                source = "sylvex 0.3\ncreature x {\n " + field + "\n}"
                 with self.assertRaises(SemanticError):
                     expand_semantic(source)
 
