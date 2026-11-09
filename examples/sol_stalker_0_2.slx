@@ -1,0 +1,17 @@
+sylvex 0.2
+
+# Reusable defaults expand into explicit properties.
+profile realistic {
+ anatomy: biological
+ material: pbr
+ motion: natural
+ topology: optimised
+ verify: anatomy+rig+animation
+}
+
+creature "Sol-Stalker" @realistic {
+ size: 2.4m
+ tris: <=150k
+ rig+anim: walk,jump
+ steps: model>rig>animate>verify
+}
