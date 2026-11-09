@@ -37,7 +37,6 @@ class CompactTests(unittest.TestCase):
            "runtime_compat":VERSION,"tasks":["L",["N",7,"x",["L"],1]]}
   with self.assertRaises(SylvexError):
    decode_program(HEADER + zlib.compress(json.dumps(payload).encode()))
-if __name__=="__main__": unittest.main()
 
 
     def test_decoder_rejects_non_object_payload(self):
@@ -53,3 +52,5 @@ if __name__=="__main__": unittest.main()
                    "runtime_compat":VERSION,"tasks":["L",["N",7,"x",["L"],1]]}
         with self.assertRaises(SylvexError):
             decode_program(HEADER + zlib.compress(json.dumps(payload).encode()))
+
+if __name__=="__main__": unittest.main()
