@@ -6,6 +6,10 @@ class Tests(unittest.TestCase):
  def test_evidence(self): self.assertEqual(self.runslx('task t { let x = 42 [obs] emit x }')["emitted"],[{"value":42,"evidence":"obs"}])
  def test_math(self): self.assertEqual(self.runslx('task t { let x = 2 + 3 * 4 assert x == 14 emit x }')["emitted"][0]["value"],14)
  def test_if(self): self.assertEqual(self.runslx('task t { let x = 3 if x > 2 { say "yes" } else { say "no" } }')["output"],["yes"])
+ def test_false_evidenced_condition(self): self.assertEqual(self.runslx('task t { let x = false [obs] if x { say "bad" } else { say "good" } }')["output"],["good"])
+ def test_false_evidenced_assertion(self):
+  with self.assertRaises(SylvexError): self.runslx('task t { let x = false [obs] assert x }')
+ def test_map_literal(self): self.assertEqual(self.runslx('task t { let x = "ok" emit {status: x} }')["emitted"][0]["status"]["value"],"ok")
  def test_set_undeclared(self):
   with self.assertRaises(SylvexError): self.runslx('task t { set x = 2 }')
  def test_unknown_name(self):

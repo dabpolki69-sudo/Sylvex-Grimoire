@@ -150,8 +150,8 @@ class Interpreter:
             elif n.kind=="say": self.output.append(str(plain(self.ev(n.children[0]))))
             elif n.kind=="emit": self.emitted.append(jsonable(self.ev(n.children[0])))
             elif n.kind=="assert":
-                if not self.ev(n.children[0]): raise SylvexError(f"Assertion failed at line {n.line}")
-            elif n.kind=="if": self.block(n.children[1] if self.ev(n.children[0]) else n.children[2])
+                if not plain(self.ev(n.children[0])): raise SylvexError(f"Assertion failed at line {n.line}")
+            elif n.kind=="if": self.block(n.children[1] if plain(self.ev(n.children[0])) else n.children[2])
             elif n.kind=="call":
                 if n.value not in self.functions: raise SylvexError(f"Function {n.value!r} is not allowlisted")
                 try: result=self.functions[n.value](*[plain(self.ev(x)) for x in n.children])
