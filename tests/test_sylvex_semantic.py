@@ -6,6 +6,7 @@ from sylvex_semantic import (
     expand_semantic,
     lower_to_slx,
     validate_semantic,
+    relationship_edges,
 )
 
 
