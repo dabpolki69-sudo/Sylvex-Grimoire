@@ -1,0 +1,10 @@
+sylvex 1.0
+
+task evidence_demo {
+    let observed_format = "glb" [obs]
+    let target_triangles = 150000 [rep]
+    let anatomy_is_realistic = true [hyp]
+    assert target_triangles > 0
+    say "Evidence annotations are metadata, not proof."
+    emit {format: observed_format, triangle_budget: target_triangles, realism_claim: anatomy_is_realistic}
+}

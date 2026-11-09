@@ -1,0 +1,7 @@
+sylvex 1.0
+
+task hello {
+    let greeting = "Hello from Sylvex Script" [obs]
+    say greeting
+    emit {language: "Sylvex Script", version: "0.1.0", greeting: greeting}
+}
