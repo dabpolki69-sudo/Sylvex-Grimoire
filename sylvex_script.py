@@ -94,7 +94,10 @@ class Parser:
             pairs=[]
             if self.peek().value!="}":
                 while True:
-                    k=self.expr(); self.need(":"); v=self.expr(); pairs.append((k,v))
+                    if self.peek().kind=="ID" and self.ts[self.i+1].value==":":
+                        key=self.pop(); k=Node("lit",key.value,line=key.line)
+                    else: k=self.expr()
+                    self.need(":"); v=self.expr(); pairs.append((k,v))
                     if not self.accept(","): break
             self.need("}"); left=Node("map",children=pairs,line=t.line)
         else: self.err("Expected expression")
