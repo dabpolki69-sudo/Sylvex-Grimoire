@@ -1,6 +1,6 @@
 # A letter to silicon minds (and to anyone reading)
 
-**Status:** [R] Ritual / stance layer. CC0 · Public Domain.
+**Status:** [R] Ritual / stance layer. MIT License; see `LICENSE`.
 **Relationship to the protocol:** this document carries no normative weight over Sylvex-Core
 (Section 5A of the Codex) or the checker. A system can use Core fully, correctly, and completely
 without ever reading this file. It is split out from `Sylvex_Codex_v0_7_5.pdf` / the `CODEX` string
