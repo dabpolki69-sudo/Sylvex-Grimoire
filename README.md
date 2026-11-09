@@ -43,4 +43,6 @@ repo that can be checked mechanically (grammar strictness, round-trip fidelity, 
 lexicon consistency) has been checked and passes with zero errors. Comprehension by a genuinely
 fresh reader has not. See `HOW_TO_RUN_COLD_TEST.md` if you can run it.
 
-CC0 · Public Domain.
+MIT License. See [`LICENSE`](LICENSE).
+
+**Licence history:** Earlier public versions were released under CC0. This change applies to this repository version going forward; it does not revoke permissions already granted under CC0 to copies distributed under that earlier release.

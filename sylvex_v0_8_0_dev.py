@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SYLVEX 0.8.0-dev - single-file edition (CC0 / Public Domain)
+SYLVEX 0.8.0-dev - single-file edition (MIT License)
 Core 0.1 is frozen and unchanged from v0.7.5. This release adds packaging changes and one
 explicitly unmerged draft section (5C/9.4); see Section 11 for exactly what changed and why.
 
