@@ -1,9 +1,10 @@
 """Reproducible byte-count comparison; representations are not semantically interchangeable."""
-import json
+import json,sys
 from pathlib import Path
+ROOT=Path(__file__).resolve().parent.parent
+sys.path.insert(0,str(ROOT))
 from sylvex_compact import compile_source
-root=Path(__file__).resolve().parent.parent
-slx=(root/"examples"/"evidence.slx").read_text(encoding="utf-8")
+slx=(ROOT/"examples"/"evidence.slx").read_text(encoding="utf-8")
 py='''asset = {"format": "glb", "triangles": 150000, "realism": "hyp"}
 assert asset["triangles"] > 0
 print(asset)
