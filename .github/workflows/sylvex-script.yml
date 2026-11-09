@@ -3,8 +3,11 @@ on:
   push:
     paths:
       - 'sylvex_script.py'
+      - 'sylvex_semantic.py'
       - 'sylvex_compact.py'
       - 'sylvexc.py'
+      - 'sylvexs.py'
+      - 'SYLVEX_*SPEC*.md'
       - 'tests/**'
       - 'examples/**'
       - 'benchmarks/**'
@@ -12,8 +15,11 @@ on:
   pull_request:
     paths:
       - 'sylvex_script.py'
+      - 'sylvex_semantic.py'
       - 'sylvex_compact.py'
       - 'sylvexc.py'
+      - 'sylvexs.py'
+      - 'SYLVEX_*SPEC*.md'
       - 'tests/**'
       - 'examples/**'
       - 'benchmarks/**'
@@ -31,4 +37,5 @@ jobs:
       - run: python sylvex_script.py examples/evidence.slx --json
       - run: python sylvexc.py compile examples/evidence.slx
       - run: python sylvexc.py run examples/evidence.slxb --json
+      - run: python sylvexs.py examples/sol_stalker_0_2.slx --compact
       - run: python benchmarks/size_benchmark.py

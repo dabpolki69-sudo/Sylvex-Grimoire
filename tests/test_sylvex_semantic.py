@@ -1,6 +1,14 @@
 import unittest
-from sylvex_semantic import SemanticError,canonical_json,expand_semantic,lower_to_slx
-SOURCE='''sylvex 0.2
+
+from sylvex_semantic import (
+    SemanticError,
+    canonical_json,
+    expand_semantic,
+    lower_to_slx,
+)
+
+
+SOURCE = """sylvex 0.2
 profile realistic {
  anatomy: biological
  material: pbr
@@ -13,25 +21,83 @@ creature "Sol-Stalker" @realistic {
  rig+anim: walk,jump
  steps: model>rig>animate>verify
 }
-'''
+"""
+
+
 class SemanticTests(unittest.TestCase):
- def test_profile_and_values(self):
-  p=expand_semantic(SOURCE)["entities"][0]["properties"]
-  self.assertEqual(p["anatomy"],"biological"); self.assertEqual(p["size"],{"value":2.4,"unit":"m"})
-  self.assertEqual(p["tris"],{"operator":"<=","value":150000}); self.assertEqual(p["rig+anim"],["walk","jump"])
-  self.assertEqual(p["steps"]["pipeline"],["model","rig","animate","verify"])
- def test_override(self):
-  s=SOURCE.replace(' size: 2.4m',' material: metal\n size: 2.4m')
-  self.assertEqual(expand_semantic(s)["entities"][0]["properties"]["material"],"metal")
- def test_unknown_profile(self):
-  with self.assertRaises(SemanticError): expand_semantic("sylvex 0.2\ncreature x @missing {\n size: 2m\n}")
- def test_duplicate_field(self):
-  with self.assertRaises(SemanticError): expand_semantic("sylvex 0.2\ncreature x {\n size: 2m\n size: 3m\n}")
- def test_unclosed(self):
-  with self.assertRaises(SemanticError): expand_semantic("sylvex 0.2\ncreature x {\n size: 2m\n")
- def test_canonical(self): self.assertEqual(canonical_json(SOURCE),canonical_json(SOURCE))
- def test_lowering(self):
-  from sylvex_script import Interpreter
-  r=Interpreter().run(lower_to_slx(SOURCE))
-  self.assertEqual(r["emitted"][0]["value"]["entities"][0]["name"],"Sol-Stalker")
-if __name__=="__main__": unittest.main()
+    def test_profile_and_values(self):
+        properties = expand_semantic(SOURCE)["entities"][0]["properties"]
+        self.assertEqual(properties["anatomy"], "biological")
+        self.assertEqual(properties["size"], {"value": 2.4, "unit": "m"})
+        self.assertEqual(properties["tris"], {"operator": "<=", "value": 150000})
+        self.assertEqual(properties["rig+anim"], ["walk", "jump"])
+        self.assertEqual(
+            properties["steps"]["pipeline"],
+            ["model", "rig", "animate", "verify"],
+        )
+
+    def test_profile_override(self):
+        source = SOURCE.replace(
+            " size: 2.4m",
+            " material: metal\n size: 2.4m",
+        )
+        properties = expand_semantic(source)["entities"][0]["properties"]
+        self.assertEqual(properties["material"], "metal")
+
+    def test_unknown_profile(self):
+        source = "sylvex 0.2\ncreature x @missing {\n size: 2m\n}"
+        with self.assertRaises(SemanticError):
+            expand_semantic(source)
+
+    def test_duplicate_field(self):
+        source = "sylvex 0.2\ncreature x {\n size: 2m\n size: 3m\n}"
+        with self.assertRaises(SemanticError):
+            expand_semantic(source)
+
+    def test_duplicate_profile(self):
+        source = (
+            "sylvex 0.2\n"
+            "profile p {\n a: 1\n}\n"
+            "profile p {\n b: 2\n}\n"
+            "creature x @p {\n c: 3\n}"
+        )
+        with self.assertRaises(SemanticError):
+            expand_semantic(source)
+
+    def test_unclosed_block(self):
+        with self.assertRaises(SemanticError):
+            expand_semantic("sylvex 0.2\ncreature x {\n size: 2m\n")
+
+    def test_canonical_output_is_deterministic(self):
+        self.assertEqual(canonical_json(SOURCE), canonical_json(SOURCE))
+        self.assertEqual(canonical_json(SOURCE, None), canonical_json(SOURCE, None))
+
+    def test_nested_lists_and_quoted_commas(self):
+        source = (
+            'sylvex 0.2\n'
+            'asset "A, B" {\n'
+            ' tags: ["large, creature", walk, [jump, glide]]\n'
+            '}'
+        )
+        expanded = expand_semantic(source)
+        self.assertEqual(expanded["entities"][0]["name"], "A, B")
+        self.assertEqual(
+            expanded["entities"][0]["properties"]["tags"],
+            ["large, creature", "walk", ["jump", "glide"]],
+        )
+
+    def test_lowering_emits_native_map(self):
+        from sylvex_script import Interpreter
+
+        result = Interpreter().run(lower_to_slx(SOURCE))
+        emitted = result["emitted"][0]["value"]
+        self.assertIsInstance(emitted, dict)
+        self.assertEqual(emitted["entities"][0]["name"], "Sol-Stalker")
+        self.assertEqual(
+            emitted["entities"][0]["properties"]["size"],
+            {"value": 2.4, "unit": "m"},
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
