@@ -163,6 +163,36 @@ asset x {
         with self.assertRaises(SemanticError):
             validate_semantic(expanded, strict_refs=True)
 
+
+    def test_role_typed_links_and_reference_validation(self):
+        source = """sylvex 0.3
+creature A {
+ rig: link("rig", "rigs/A")
+ motion: link("animation", "anims/A")
+}
+"""
+        expanded = expand_semantic(source)
+        self.assertEqual(
+            relationship_edges(expanded),
+            [
+                {"to": "anims/A", "role": "animation", "via": "A.motion"},
+                {"to": "rigs/A", "role": "rig", "via": "A.rig"},
+            ],
+        )
+        report = validate_semantic(
+            expanded,
+            known_refs={"rigs/A", "anims/A"},
+            strict_refs=True,
+        )
+        self.assertEqual(report["reference_count"], 2)
+
+    def test_link_requires_two_nonempty_strings(self):
+        for expression in ('link("rig")', 'link("", "target")', 'link("rig", 3)'):
+            with self.subTest(expression=expression):
+                source = "sylvex 0.3\\nasset A {\\n target: " + expression + "\\n}"
+                with self.assertRaises(SemanticError):
+                    expand_semantic(source)
+
     def test_lowering_emits_native_map(self):
         from sylvex_script import Interpreter
 

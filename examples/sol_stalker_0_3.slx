@@ -11,7 +11,7 @@ creature "Sol-Stalker" @creature_base {
   origin: vec3(0, 0, 0)
   accent: color("#00E5FF")
   scale: range(0.85, 1.15)
-  rig: ref("rigs/sol_stalker")
-  locomotion: ref("animations/stalker_locomotion")
+  rig: link("rig", "rigs/sol_stalker")
+  locomotion: link("animation", "animations/stalker_locomotion")
   verify: anatomy+rig+animation
 }

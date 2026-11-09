@@ -25,11 +25,12 @@ creature "Sol-Stalker" @realistic {
 - `color("#RRGGBB")` or `color("#RRGGBBAA")`: validated hexadecimal color, normalised to uppercase.
 - `range(min, max)`: two numeric bounds with min no greater than max.
 - `ref("path-or-id")`: explicit symbolic reference. It is data only; it does not load or execute the target.
+- `link("role", "path-or-id")`: a role-labelled relationship to a symbolic target, e.g. `link("rig", "rigs/stalker")`. The role is preserved in graph output; the target remains inert data.
 
 Invalid constructor names, argument counts and value types are errors. Nested constructors and lists are parsed deterministically.
 
 ## Relationships
-References nested in entity properties form directed graph edges. `relationship_edges()` extracts edges with their originating property path. References may name assets, rigs, animations, materials or other entities; this stage does not require targets to exist, since resolution belongs to a later validation layer.
+References nested in entity properties form directed graph edges. `relationship_edges()` extracts edges with their originating property path. A `link()` edge also carries its declared role. References may name assets, rigs, animations, materials or other entities; this stage does not require targets to exist, since resolution belongs to a later validation layer.
 
 ## Expansion and compatibility
 The 0.3 header is retained in expanded output and profile version metadata. Existing 0.2 source remains valid. Profile defaults are copied first and entity-local values override them. Canonical JSON remains available, and lowering continues to emit native Sylvex 1.0 values.

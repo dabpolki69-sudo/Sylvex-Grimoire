@@ -83,6 +83,10 @@ def _scalar(raw, line, version='0.2'):
             if len(args) != 1 or not isinstance(args[0], str) or not args[0].strip():
                 raise SemanticError(f"ref() requires one non-empty quoted string at line {line}")
             return {"$ref": args[0]}
+        if name == "link":
+            if len(args) != 2 or any(not isinstance(value, str) or not value.strip() for value in args):
+                raise SemanticError(f"link() requires a non-empty role and target string at line {line}")
+            return {"$link": {"role": args[0], "target": args[1]}}
         if name == "vec3":
             if len(args) != 3 or any(type(value) not in (int, float) for value in args):
                 raise SemanticError(f"vec3() requires exactly three numbers at line {line}")
@@ -210,6 +214,9 @@ def relationship_edges(expanded):
         if isinstance(value, dict):
             if set(value) == {"$ref"}:
                 edges.append({"to": value["$ref"], "via": path})
+            elif set(value) == {"$link"} and isinstance(value["$link"], dict):
+                link = value["$link"]
+                edges.append({"to": link["target"], "role": link["role"], "via": path})
             else:
                 for key in sorted(value):
                     walk(value[key], f"{path}.{key}" if path else str(key))
