@@ -38,4 +38,5 @@ jobs:
       - run: python sylvexc.py compile examples/evidence.slx
       - run: python sylvexc.py run examples/evidence.slxb --json
       - run: python sylvexs.py examples/sol_stalker_0_2.slx --compact
+      - run: python sylvexs.py examples/sol_stalker_0_3.slx --compact
       - run: python benchmarks/size_benchmark.py

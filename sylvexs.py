@@ -3,7 +3,7 @@ import argparse,sys
 from pathlib import Path
 from sylvex_semantic import SemanticError,canonical_json,lower_to_slx
 def main(argv=None):
- p=argparse.ArgumentParser(description="Sylvex 0.2 semantic expander")
+ p=argparse.ArgumentParser(description="Sylvex 0.2/0.3 semantic expander")
  p.add_argument("file"); p.add_argument("--lower"); p.add_argument("--compact",action="store_true"); a=p.parse_args(argv)
  try:
   src=Path(a.file).read_text(encoding="utf-8")

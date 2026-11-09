@@ -26,6 +26,30 @@ task inspect_asset {
 }
 ```
 
+## Semantic descriptions (0.2 / 0.3)
+
+The semantic layer shares the `.slx` extension but has its own version header:
+
+```text
+sylvex 0.3
+creature "Sol-Stalker" {
+    origin: vec3(0, 0, 0)
+    accent: color("#00E5FF")
+    scale: range(0.8, 1.2)
+    rig: ref("rigs/stalker")
+}
+```
+
+Expand to canonical JSON:
+
+```bash
+python3 sylvexs.py examples/sol_stalker_0_3.slx
+python3 sylvexs.py examples/sol_stalker_0_3.slx --compact
+python3 sylvexs.py examples/sol_stalker_0_3.slx --lower /tmp/stalker.slx
+```
+
+The semantic expander is declarative: typed values and references are data, not executable instructions. See `SYLVEX_SEMANTIC_SPEC_0_3.md`.
+
 ## Safety and limits
 This is an experimental interpreter, not a production sandbox or Python replacement. It supports tasks, variables, expressions, conditionals, assertions, output and registered host functions. It does not permit arbitrary Python, shell commands, imports, networking or implicit filesystem access. See SYLVEX_SCRIPT_SPEC_0_1.md.
 
