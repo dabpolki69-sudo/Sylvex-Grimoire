@@ -1,6 +1,6 @@
 import unittest
-from sylvex_script import SylvexError
-from sylvex_compact import compile_source,decode_program,run_compiled
+from sylvex_script import SylvexError, VERSION
+from sylvex_compact import compile_source,decode_program,run_compiled,HEADER
 SOURCE='''sylvex 1.0
 task build {
  let format = "glb" [obs]
@@ -26,6 +26,17 @@ class CompactTests(unittest.TestCase):
   with self.assertRaises(SylvexError): decode_program(b"SLXB"+bytes([1])+b"not-zlib")
  def test_invalid_source(self):
   with self.assertRaises(SylvexError): compile_source("sylvex 1.0\ntask broken { say }")
+
+ def test_decoder_rejects_non_object_payload(self):
+  import zlib
+  with self.assertRaises(SylvexError):
+   decode_program(HEADER + zlib.compress(b"[]"))
+ def test_decoder_rejects_malformed_ast_node_fields(self):
+  import json,zlib
+  payload={"language":"sylvex","language_version":"1.0","compiler_format":1,
+           "runtime_compat":VERSION,"tasks":["L",["N",7,"x",["L"],1]]}
+  with self.assertRaises(SylvexError):
+   decode_program(HEADER + zlib.compress(json.dumps(payload).encode()))
 if __name__=="__main__": unittest.main()
 
 
