@@ -5,6 +5,7 @@ from sylvex_semantic import (
     canonical_json,
     expand_semantic,
     lower_to_slx,
+    validate_semantic,
 )
 
 
@@ -128,6 +129,39 @@ creature "Sol-Stalker" {
         source = 'sylvex 0.2\ncreature x {\n origin: vec3(0, 0, 0)\n}'
         with self.assertRaises(SemanticError):
             expand_semantic(source)
+
+
+    def test_nested_typed_values_preserve_version(self):
+        source = """sylvex 0.3
+asset x {
+ refs: [ref("rig/a"), ref("rig/b")]
+ bounds: [range(0, 1), range(2, 3)]
+}
+"""
+        props = expand_semantic(source)["entities"][0]["properties"]
+        self.assertEqual(props["refs"], [{"$ref": "rig/a"}, {"$ref": "rig/b"}])
+        self.assertEqual(props["bounds"][1], {"$type": "range", "min": 2, "max": 3})
+
+    def test_entity_and_reference_validation(self):
+        duplicate = expand_semantic(
+            'sylvex 0.3\\nasset A {\\n link: ref("rig/A")\\n}\\nasset A {\\n}'
+        )
+        with self.assertRaises(SemanticError):
+            validate_semantic(duplicate)
+        valid = expand_semantic(
+            'sylvex 0.3\\nasset A {\\n link: ref("rig/A")\\n}'
+        )
+        self.assertEqual(
+            validate_semantic(valid, known_refs={"rig/A"}, strict_refs=True),
+            {"valid": True, "entity_count": 1, "reference_count": 1, "unresolved_check": True},
+        )
+        with self.assertRaises(SemanticError):
+            validate_semantic(valid, known_refs=set(), strict_refs=True)
+
+    def test_strict_refs_requires_registry(self):
+        expanded = expand_semantic("sylvex 0.3\\nasset A {\\n}")
+        with self.assertRaises(SemanticError):
+            validate_semantic(expanded, strict_refs=True)
 
     def test_lowering_emits_native_map(self):
         from sylvex_script import Interpreter

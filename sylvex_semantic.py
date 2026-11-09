@@ -103,12 +103,12 @@ def _scalar(raw, line, version='0.2'):
         if not inner:
             return []
         try:
-            return [_scalar(item, line) for item in _split_top_level(inner, ",")]
+            return [_scalar(item, line, version) for item in _split_top_level(inner, ",")]
         except ValueError as exc:
             raise SemanticError(f"Invalid list at line {line}: {exc}") from exc
     match = _CONSTRAINT.fullmatch(raw)
     if match:
-        return {"operator": match.group(1), "value": _scalar(match.group(2), line)}
+        return {"operator": match.group(1), "value": _scalar(match.group(2), line, version)}
     if "," in raw or "+" in raw:
         separator = "," if "," in raw else "+"
         try:
@@ -220,6 +220,43 @@ def relationship_edges(expanded):
         walk(entity.get("properties", {}), entity.get("name", ""))
     return sorted(edges, key=lambda edge: (edge["to"], edge["via"]))
 
+
+
+def validate_semantic(expanded, known_refs=None, strict_refs=False):
+    """Validate entity identifiers and optionally resolve refs against a supplied registry.
+
+    known_refs is an iterable of exact reference identifiers. References remain inert;
+    this function never loads files or performs network access.
+    """
+    if not isinstance(expanded, dict) or expanded.get("language") != "sylvex":
+        raise SemanticError("Expected an expanded Sylvex document")
+    entities = expanded.get("entities")
+    if not isinstance(entities, list) or not entities:
+        raise SemanticError("Expanded document must contain entities")
+    names = set()
+    for index, entity in enumerate(entities):
+        if not isinstance(entity, dict):
+            raise SemanticError(f"Entity at index {index} must be an object")
+        name = entity.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise SemanticError(f"Entity at index {index} requires a non-empty name")
+        if name in names:
+            raise SemanticError(f"Duplicate entity identifier {name!r}")
+        names.add(name)
+    edges = relationship_edges(expanded)
+    if strict_refs and known_refs is None:
+        raise SemanticError("strict_refs requires an explicit known_refs registry")
+    if known_refs is not None:
+        registry = set(known_refs)
+        missing = sorted({edge["to"] for edge in edges if edge["to"] not in registry})
+        if missing:
+            raise SemanticError("Unresolved references: " + ", ".join(missing))
+    return {
+        "valid": True,
+        "entity_count": len(entities),
+        "reference_count": len(edges),
+        "unresolved_check": known_refs is not None,
+    }
 
 def canonical_json(source, indent=2):
     return json.dumps(expand_semantic(source), ensure_ascii=False, sort_keys=True, indent=indent)
