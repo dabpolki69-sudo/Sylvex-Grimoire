@@ -189,7 +189,7 @@ creature A {
     def test_link_requires_two_nonempty_strings(self):
         for expression in ('link("rig")', 'link("", "target")', 'link("rig", 3)'):
             with self.subTest(expression=expression):
-                source = "sylvex 0.3\\nasset A {\\n target: " + expression + "\\n}"
+                source = "sylvex 0.3\nasset A {\n target: " + expression + "\n}"
                 with self.assertRaises(SemanticError):
                     expand_semantic(source)
 
