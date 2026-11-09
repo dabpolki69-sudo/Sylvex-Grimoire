@@ -10,14 +10,26 @@ def _pack(value):
     if value is None or isinstance(value,(str,int,float,bool)): return value
     raise SylvexError(f"Cannot encode AST value {type(value).__name__}")
 
-def _unpack(value):
+def _unpack(value, depth=0):
+    if depth > 256:
+        raise SylvexError("Compact AST nesting limit exceeded")
     if isinstance(value,list):
         if not value: raise SylvexError("Malformed compact AST node")
-        if value[0]=="N" and len(value)==5: return Node(value[1],value[2],_unpack(value[3]),value[4])
-        if value[0]=="T": return tuple(_unpack(x) for x in value[1:])
-        if value[0]=="L": return [_unpack(x) for x in value[1:]]
+        if value[0]=="N":
+            if len(value)!=5 or not isinstance(value[1],str) or (value[2] is not None and type(value[2]) not in (str,int,float,bool)) or type(value[4]) is not int or value[4]<1:
+                raise SylvexError("Malformed compact AST node fields")
+            children=_unpack(value[3],depth+1)
+            if not isinstance(children,(list,tuple)):
+                raise SylvexError("Malformed compact AST children")
+            return Node(value[1],value[2],children,value[4])
+        if value[0]=="T": return tuple(_unpack(x,depth+1) for x in value[1:])
+        if value[0]=="L": return [_unpack(x,depth+1) for x in value[1:]]
         raise SylvexError("Unknown compact AST marker")
-    return value
+    if value is None or type(value) in (str,int,bool): return value
+    if type(value) is float:
+        import math
+        if math.isfinite(value): return value
+    raise SylvexError("Invalid compact AST scalar")
 
 def compile_source(source):
     tasks=Parser(source).parse()
@@ -40,11 +52,12 @@ def decode_program(data):
         payload=json.loads(raw.decode("utf-8"))
     except SylvexError: raise
     except Exception as exc: raise SylvexError(f"Cannot decode .slxb: {exc}") from exc
+    if not isinstance(payload,dict): raise SylvexError("Compact payload must be a JSON object")
     if payload.get("language")!="sylvex" or payload.get("language_version")!="1.0": raise SylvexError("Unsupported Sylvex language version")
     if payload.get("compiler_format")!=FORMAT_VERSION: raise SylvexError("Compact format metadata mismatch")
     if payload.get("runtime_compat")!=VERSION: raise SylvexError(f"Artifact requires runtime {payload.get('runtime_compat')}")
     tasks=_unpack(payload.get("tasks"))
-    if not isinstance(tasks,list) or not tasks or any(not isinstance(x,Node) or x.kind!="task" for x in tasks): raise SylvexError("Invalid compiled task table")
+    if not isinstance(tasks,list) or not tasks or any(not isinstance(x,Node) or x.kind!="task" or not isinstance(x.value,str) or not isinstance(x.children,list) for x in tasks): raise SylvexError("Invalid compiled task table")
     payload["tasks"]=tasks
     return payload
 

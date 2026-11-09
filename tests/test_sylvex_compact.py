@@ -27,3 +27,18 @@ class CompactTests(unittest.TestCase):
  def test_invalid_source(self):
   with self.assertRaises(SylvexError): compile_source("sylvex 1.0\ntask broken { say }")
 if __name__=="__main__": unittest.main()
+
+
+    def test_decoder_rejects_non_object_payload(self):
+        import zlib
+        from sylvex_compact import HEADER, decode_program
+        with self.assertRaises(SylvexError):
+            decode_program(HEADER + zlib.compress(b"[]"))
+
+    def test_decoder_rejects_malformed_ast_node_fields(self):
+        import json, zlib
+        from sylvex_compact import HEADER, decode_program
+        payload = {"language":"sylvex","language_version":"1.0","compiler_format":1,
+                   "runtime_compat":VERSION,"tasks":["L",["N",7,"x",["L"],1]]}
+        with self.assertRaises(SylvexError):
+            decode_program(HEADER + zlib.compress(json.dumps(payload).encode()))
