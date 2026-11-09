@@ -123,6 +123,12 @@ creature "Sol-Stalker" {
                 with self.assertRaises(SemanticError):
                     expand_semantic(source)
 
+
+    def test_typed_values_require_v03(self):
+        source = 'sylvex 0.2\ncreature x {\n origin: vec3(0, 0, 0)\n}'
+        with self.assertRaises(SemanticError):
+            expand_semantic(source)
+
     def test_lowering_emits_native_map(self):
         from sylvex_script import Interpreter
 

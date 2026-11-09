@@ -57,7 +57,7 @@ def _split_top_level(raw, separators):
     return parts
 
 
-def _scalar(raw, line):
+def _scalar(raw, line, version='0.2'):
     raw = raw.strip()
     if not raw:
         raise SemanticError(f"Empty value at line {line}")
@@ -70,10 +70,12 @@ def _scalar(raw, line):
         return {"true": True, "false": False, "null": None}[raw]
     constructor = re.fullmatch(r"([a-z][a-z0-9_]*)\((.*)\)", raw)
     if constructor:
+        if version != "0.3":
+            raise SemanticError(f"Typed constructors require Sylvex 0.3 at line {line}")
         name, inner = constructor.groups()
         try:
             args = [] if not inner.strip() else [
-                _scalar(item, line) for item in _split_top_level(inner, ",")
+                _scalar(item, line, version) for item in _split_top_level(inner, ",")
             ]
         except ValueError as exc:
             raise SemanticError(f"Invalid {name} value at line {line}: {exc}") from exc
@@ -110,7 +112,7 @@ def _scalar(raw, line):
     if "," in raw or "+" in raw:
         separator = "," if "," in raw else "+"
         try:
-            return [_scalar(item, line) for item in _split_top_level(raw, separator)]
+            return [_scalar(item, line, version) for item in _split_top_level(raw, separator)]
         except ValueError as exc:
             raise SemanticError(f"Invalid list at line {line}: {exc}") from exc
     match = _QUANTITY.fullmatch(raw)
@@ -173,7 +175,7 @@ def parse_semantic(source):
         key, value = match.groups()
         if key in current.fields:
             raise SemanticError(f"Duplicate field {key!r} at line {number}")
-        current.fields[key] = _scalar(value, number)
+        current.fields[key] = _scalar(value, number, _HEADER.fullmatch(lines[0].strip()).group(1))
     if current is not None:
         raise SemanticError(f"Unclosed {current.kind} block starting at line {current.line}")
     if not declarations:
