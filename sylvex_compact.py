@@ -19,7 +19,7 @@ def _unpack(value, depth=0):
             if len(value)!=5 or not isinstance(value[1],str) or (value[2] is not None and type(value[2]) not in (str,int,float,bool)) or type(value[4]) is not int or value[4]<1:
                 raise SylvexError("Malformed compact AST node fields")
             children=_unpack(value[3],depth+1)
-            if not isinstance(children,(list,tuple)):
+            if children is not None and not isinstance(children,(list,tuple)):
                 raise SylvexError("Malformed compact AST children")
             return Node(value[1],value[2],children,value[4])
         if value[0]=="T": return tuple(_unpack(x,depth+1) for x in value[1:])
